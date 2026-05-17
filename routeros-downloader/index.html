@@ -1,0 +1,340 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MikroTik RouterOS Downloader</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: white;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 10px 35px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 30px;
+    }
+
+    .subtitle {
+      text-align: center;
+      opacity: 0.8;
+      margin-bottom: 25px;
+      line-height: 1.6;
+    }
+
+    .group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    select,
+    input {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      font-size: 15px;
+      outline: none;
+    }
+
+    select option {
+      color: black;
+    }
+
+    input::placeholder {
+      color: rgba(255,255,255,0.6);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #38bdf8;
+      color: #0f172a;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #0ea5e9;
+    }
+
+    .result {
+      margin-top: 25px;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .success {
+      color: #4ade80;
+      font-weight: bold;
+    }
+
+    .error {
+      color: #f87171;
+      font-weight: bold;
+    }
+
+    .download-btn {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 12px 20px;
+      background: #22c55e;
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      transition: 0.3s;
+    }
+
+    .download-btn:hover {
+      background: #16a34a;
+    }
+
+    .url-box {
+      margin-top: 15px;
+      word-break: break-all;
+      background: rgba(255,255,255,0.08);
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>RouterOS Downloader</h1>
+
+  <div class="subtitle">
+    Select MikroTik RouterOS version & architecture.<br>
+    If file exists on server, download button will appear.
+  </div>
+
+  <div class="group">
+    <label>Select Major Version</label>
+    <select id="majorVersion">
+      <option value="6">RouterOS v6</option>
+      <option value="7" selected>RouterOS v7</option>
+    </select>
+  </div>
+
+  <div class="group">
+    <label>Select Architecture</label>
+    <select id="architecture">
+      <option value="arm">ARM</option>
+      <option value="arm64">ARM64 / AMPERE</option>
+      <option value="mipsbe">MIPSBE</option>
+      <option value="mmips">MMIPS</option>
+      <option value="smips">SMIPS</option>
+      <option value="tile">TILE</option>
+      <option value="ppc">PPC</option>
+      <option value="x86">X86</option>
+    </select>
+  </div>
+
+  <div class="group">
+    <label>Enter Full Version</label>
+    <input type="text" id="version" placeholder="Example: 7.16.1" />
+  </div>
+
+  <button onclick="searchFile()">
+    Search & Download
+  </button>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+
+async function searchFile() {
+
+  const major = document.getElementById('majorVersion').value;
+  const architecture = document.getElementById('architecture').value;
+  const version = document.getElementById('version').value.trim();
+  const result = document.getElementById('result');
+
+  if (!version) {
+    result.innerHTML = '<div class="error">Please enter RouterOS version.</div>';
+    return;
+  }
+
+  if (!version.startsWith(major + '.')) {
+    result.innerHTML = `
+      <div class="error">
+        Selected version type does not match entered version.
+      </div>
+    `;
+    return;
+  }
+
+  let filename = '';
+
+  // RouterOS v7 Naming
+  if (major === '7') {
+
+    if (architecture === 'x86') {
+      filename = `routeros-${version}.npk`;
+    } else {
+      filename = `routeros-${version}-${architecture}.npk`;
+    }
+
+  }
+
+  // RouterOS v6 Naming
+  else {
+
+    const archMap = {
+      arm: 'arm',
+      arm64: 'arm64',
+      mipsbe: 'mipsbe',
+      mmips: 'mmips',
+      smips: 'smips',
+      tile: 'tile',
+      ppc: 'powerpc',
+      x86: 'x86'
+    };
+
+    filename = `routeros-${archMap[architecture]}-${version}.npk`;
+  }
+
+  const url = `https://download.mikrotik.com/routeros/${version}/${filename}`;
+
+  result.innerHTML = 'Checking file on MikroTik server...';
+
+  try {
+
+    const response = await fetch(url, {
+      method: 'HEAD'
+    });
+
+    if (response.ok) {
+
+      result.innerHTML = `
+        <div class="success">
+          File Found Successfully
+        </div>
+
+        <div class="url-box">
+          ${url}
+        </div>
+
+        <a class="download-btn" href="${url}" download>
+          Download ${architecture.toUpperCase()} ${version}
+        </a>
+      `;
+
+    } else {
+
+      result.innerHTML = `
+        <div class="error">
+          File Not Found On Server
+        </div>
+
+        <div class="url-box">
+          ${url}
+        </div>
+      `;
+
+    }
+
+  } catch (error) {
+
+    result.innerHTML = `
+      <div class="error">
+        Unable to connect to server or blocked by CORS.
+      </div>
+    `;
+
+  }
+}
+
+</script>
+
+</body>
+</html>
+
+<!--
+
+## Supported RouterOS v7 Formats
+
+| Architecture | Example File               |
+| ------------ | -------------------------- |
+| ARM          | routeros-7.16.1-arm.npk    |
+| ARM64        | routeros-7.16.1-arm64.npk  |
+| MIPSBE       | routeros-7.16.1-mipsbe.npk |
+| MMIPS        | routeros-7.16.1-mmips.npk  |
+| SMIPS        | routeros-7.16.1-smips.npk  |
+| TILE         | routeros-7.16.1-tile.npk   |
+| PPC          | routeros-7.16.1-ppc.npk    |
+| X86          | routeros-7.16.1.npk        |
+
+## Supported RouterOS v6 Formats
+
+| Architecture | Example File                 |
+| ------------ | ---------------------------- |
+| ARM          | routeros-arm-6.49.19.npk     |
+| ARM64        | routeros-arm64-6.49.19.npk   |
+| MIPSBE       | routeros-mipsbe-6.49.19.npk  |
+| MMIPS        | routeros-mmips-6.49.19.npk   |
+| SMIPS        | routeros-smips-6.49.19.npk   |
+| TILE         | routeros-tile-6.49.19.npk    |
+| PPC          | routeros-powerpc-6.49.19.npk |
+| X86          | routeros-x86-6.49.19.npk     |
+
+## Features
+
+* RouterOS v6 / v7 selector
+* Architecture selector
+* Dynamic URL generator
+* Server file checking
+* Auto download button
+* Modern responsive UI
+* Error handling system
+
+## Usage
+
+1. Save file as `index.html`
+2. Open in browser
+3. Select RouterOS version type
+4. Select architecture
+5. Enter full version
+6. Click Search & Download
+7. If file exists, download button appears
+
+-->
