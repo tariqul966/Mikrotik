@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>MikroTik RouterOS Downloader | All Versions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 20% 10%, #1a1f2e, #0b0d17);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      margin: 0;
+    }
+    .glass-card {
+      background: rgba(20, 25, 35, 0.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 2.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .neon-glow {
+      box-shadow: 0 0 12px rgba(0, 180, 255, 0.5), 0 0 25px rgba(0, 200, 255, 0.3);
+      transition: box-shadow 0.25s ease, transform 0.2s ease;
+    }
+    .neon-glow:hover {
+      box-shadow: 0 0 20px rgba(0, 210, 255, 0.8), 0 0 40px rgba(0, 190, 255, 0.5);
+      transform: translateY(-2px);
+    }
+    .glass-input {
+      background: rgba(10, 15, 24, 0.55);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 1.2rem;
+      color: white;
+      transition: all 0.2s ease;
+    }
+    .glass-input:focus {
+      border-color: rgba(0, 200, 255, 0.7);
+      box-shadow: 0 0 18px rgba(0, 160, 255, 0.6);
+      outline: none;
+    }
+    .glass-input option {
+      background: #121826;
+      color: #e0e0e0;
+    }
+    .download-link-container {
+      transition: opacity 0.4s ease, transform 0.3s ease;
+    }
+    .fade-in {
+      animation: fadeSlide 0.5s ease-out;
+    }
+    @keyframes fadeSlide {
+      0% { opacity: 0; transform: translateY(15px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #a0e9ff, #6cb4ee, #4f9fcf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .custom-select {
+      background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23a0e9ff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E');
+      background-repeat: no-repeat;
+      background-position: right 1.2rem center;
+      background-size: 1.4rem;
+    }
+    .version-badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 0.5rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+    .badge-lts { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+    .badge-stable { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .badge-testing { background: rgba(234, 179, 8, 0.2); color: #fbbf24; }
+    .badge-eol { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 0.8rem;
+      }
+      .glass-card {
+        border-radius: 2rem;
+        max-height: 85vh;
+      }
+    }
+    
+    /* Custom scrollbar for glass card */
+    .glass-card::-webkit-scrollbar {
+      width: 6px;
+    }
+    .glass-card::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+    }
+    .glass-card::-webkit-scrollbar-thumb {
+      background: rgba(0, 200, 255, 0.3);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <main class="w-full max-w-3xl mx-auto">
+    <div class="glass-card p-6 sm:p-8 md:p-10 text-white shadow-2xl transition-all duration-300">
+      
+      <!-- Header -->
+      <div class="text-center mb-6">
+        <h1 class="text-4xl sm:text-5xl font-bold tracking-tight gradient-text drop-shadow-lg">
+          RouterOS Downloader
+        </h1>
+        <p class="text-gray-300 mt-2 text-sm sm:text-base font-medium opacity-90">
+          All versions • Official MikroTik packages
+        </p>
+        <div class="flex justify-center gap-3 mt-3 text-xs">
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-400"></span> LTS</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-400"></span> Stable</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-yellow-400"></span> Testing</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-400"></span> EOL</span>
+        </div>
+        <div class="h-1 w-20 bg-cyan-400/60 mx-auto mt-4 rounded-full blur-sm"></div>
+      </div>
+
+      <div class="space-y-5">
+        <!-- Version Selection: Dropdown + Custom Input -->
+        <div>
+          <label class="block text-sm font-semibold text-cyan-100 mb-2 ml-1 tracking-wide">
+            RouterOS Version
+            <span class="text-xs text-gray-400 ml-2">(200+ versions available)</span>
+          </label>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <!-- Dropdown for all versions -->
+            <div class="relative flex-1">
+              <select id="versionDropdown" class="w-full px-5 py-3.5 glass-input custom-select appearance-none cursor-pointer text-white font-medium focus:ring-2 focus:ring-cyan-400/60 transition-all text-sm">
+                <option value="">-- Select version (scroll for more) --</option>
+                
+                <!-- RouterOS 7.x Series -->
+                <optgroup label="── RouterOS 7.x (Current) ──">
+                  <option value="7.23">7.23 (Testing/Development)</option>
+                  <option value="7.22.3">7.22.3 (Stable)</option>
+                  <option value="7.22.2">7.22.2</option>
+                  <option value="7.22.1">7.22.1</option>
+                  <option value="7.22">7.22</option>
+                  <option value="7.21.4">7.21.4 (Long Term)</option>
+                  <option value="7.21.3">7.21.3</option>
+                  <option value="7.21.2">7.21.2</option>
+                  <option value="7.21.1">7.21.1</option>
+                  <option value="7.21">7.21</option>
+                  <option value="7.20.8">7.20.8</option>
+                  <option value="7.20.7">7.20.7</option>
+                  <option value="7.20.6">7.20.6</option>
+                  <option value="7.20.5">7.20.5</option>
+                  <option value="7.20.4">7.20.4</option>
+                  <option value="7.20.3">7.20.3</option>
+                  <option value="7.20.2">7.20.2</option>
+                  <option value="7.20.1">7.20.1</option>
+                  <option value="7.20">7.20</option>
+                  <option value="7.19.6">7.19.6</option>
+                  <option value="7.19.5">7.19.5</option>
+                  <option value="7.19.4">7.19.4</option>
+                  <option value="7.19.3">7.19.3</option>
+                  <option value="7.19.2">7.19.2</option>
+                  <option value="7.19.1">7.19.1</option>
+                  <option value="7.19">7.19</option>
+                  <option value="7.18.2">7.18.2</option>
+                  <option value="7.18.1">7.18.1</option>
+                  <option value="7.18">7.18</option>
+                  <option value="7.17.2">7.17.2</option>
+                  <option value="7.17.1">7.17.1</option>
+                  <option value="7.17">7.17</option>
+                  <option value="7.16.2">7.16.2</option>
+                  <option value="7.16.1">7.16.1</option>
+                  <option value="7.16">7.16</option>
+                  <option value="7.15.3">7.15.3</option>
+                  <option value="7.15.2">7.15.2</option>
+                  <option value="7.15.1">7.15.1</option>
+                  <option value="7.15">7.15</option>
+                  <option value="7.14.3">7.14.3</option>
+                  <option value="7.14.2">7.14.2</option>
+                  <option value="7.14.1">7.14.1</option>
+                  <option value="7.14">7.14</option>
+                  <option value="7.13.5">7.13.5</option>
+                  <option value="7.13.4">7.13.4</option>
+                  <option value="7.13.3">7.13.3</option>
+                  <option value="7.13.2">7.13.2</option>
+                  <option value="7.13.1">7.13.1</option>
+                  <option value="7.13">7.13</option>
+                  <option value="7.12.2">7.12.2</option>
+                  <option value="7.12.1">7.12.1</option>
+                  <option value="7.12">7.12</option>
+                  <option value="7.11.3">7.11.3</option>
+                  <option value="7.11.2">7.11.2</option>
+                  <option value="7.11.1">7.11.1</option>
+                  <option value="7.11">7.11</option>
+                  <option value="7.10.2">7.10.2</option>
+                  <option value="7.10.1">7.10.1</option>
+                  <option value="7.10">7.10</option>
+                  <option value="7.9.2">7.9.2</option>
+                  <option value="7.9.1">7.9.1</option>
+                  <option value="7.9">7.9</option>
+                  <option value="7.8">7.8</option>
+                  <option value="7.7">7.7</option>
+                  <option value="7.6">7.6</option>
+                  <option value="7.5">7.5</option>
+                  <option value="7.4.1">7.4.1</option>
+                  <option value="7.4">7.4</option>
+                  <option value="7.3.1">7.3.1</option>
+                  <option value="7.3">7.3</option>
+                  <option value="7.2.3">7.2.3</option>
+                  <option value="7.2.2">7.2.2</option>
+                  <option value="7.2.1">7.2.1</option>
+                  <option value="7.2">7.2</option>
+                  <option value="7.1.5">7.1.5</option>
+                  <option value="7.1.4">7.1.4</option>
+                  <option value="7.1.3">7.1.3</option>
+                  <option value="7.1.2">7.1.2</option>
+                  <option value="7.1.1">7.1.1</option>
+                  <option value="7.1">7.1</option>
+                </optgroup>
+                
+                <!-- RouterOS 6.x Series -->
+                <optgroup label="── RouterOS 6.x (Legacy) ──">
+                  <option value="6.49.19">6.49.19 (LTS - Final)</option>
+                  <option value="6.49.18">6.49.18</option>
+                  <option value="6.49.17">6.49.17</option>
+                  <option value="6.49.16">6.49.16</option>
+                  <option value="6.49.15">6.49.15</option>
+                  <option value="6.49.14">6.49.14</option>
+                  <option value="6.49.13">6.49.13</option>
+                  <option value="6.49.12">6.49.12</option>
+                  <option value="6.49.11">6.49.11</option>
+                  <option value="6.49.10">6.49.10</option>
+                  <option value="6.49.9">6.49.9</option>
+                  <option value="6.49.8">6.49.8</option>
+                  <option value="6.49.7">6.49.7</option>
+                  <option value="6.49.6">6.49.6</option>
+                  <option value="6.49.5">6.49.5</option>
+                  <option value="6.49.4">6.49.4</option>
+                  <option value="6.49.3">6.49.3</option>
+                  <option value="6.49.2">6.49.2</option>
+                  <option value="6.49.1">6.49.1</option>
+                  <option value="6.49">6.49</option>
+                  <option value="6.48.7">6.48.7</option>
+                  <option value="6.48.6">6.48.6</option>
+                  <option value="6.48.5">6.48.5</option>
+                  <option value="6.48.4">6.48.4</option>
+                  <option value="6.48.3">6.48.3</option>
+                  <option value="6.48.2">6.48.2</option>
+                  <option value="6.48.1">6.48.1</option>
+                  <option value="6.48">6.48</option>
+                  <option value="6.47.10">6.47.10</option>
+                  <option value="6.47.9">6.47.9</option>
+                  <option value="6.47.8">6.47.8</option>
+                  <option value="6.47.7">6.47.7</option>
+                  <option value="6.47.6">6.47.6</option>
+                  <option value="6.47.5">6.47.5</option>
+                  <option value="6.47.4">6.47.4</option>
+                  <option value="6.47.3">6.47.3</option>
+                  <option value="6.47.2">6.47.2</option>
+                  <option value="6.47.1">6.47.1</option>
+                  <option value="6.47">6.47</option>
+                  <option value="6.46.8">6.46.8</option>
+                  <option value="6.46.7">6.46.7</option>
+                  <option value="6.46.6">6.46.6</option>
+                  <option value="6.46.5">6.46.5</option>
+                  <option value="6.46.4">6.46.4</option>
+                  <option value="6.46.3">6.46.3</option>
+                  <option value="6.46.2">6.46.2</option>
+                  <option value="6.46.1">6.46.1</option>
+                  <option value="6.46">6.46</option>
+                  <option value="6.45.9">6.45.9</option>
+                  <option value="6.45.8">6.45.8</option>
+                  <option value="6.45.7">6.45.7</option>
+                  <option value="6.45.6">6.45.6</option>
+                  <option value="6.45.5">6.45.5</option>
+                  <option value="6.45.4">6.45.4</option>
+                  <option value="6.45.3">6.45.3</option>
+                  <option value="6.45.2">6.45.2</option>
+                  <option value="6.45.1">6.45.1</option>
+                  <option value="6.45">6.45</option>
+                  <option value="6.44.6">6.44.6</option>
+                  <option value="6.44.5">6.44.5</option>
+                  <option value="6.44.4">6.44.4</option>
+                  <option value="6.44.3">6.44.3</option>
+                  <option value="6.44.2">6.44.2</option>
+                  <option value="6.44.1">6.44.1</option>
+                  <option value="6.44">6.44</option>
+                  <option value="6.43.16">6.43.16</option>
+                  <option value="6.43.15">6.43.15</option>
+                  <option value="6.43.14">6.43.14</option>
+                  <option value="6.43.13">6.43.13</option>
+                  <option value="6.43.12">6.43.12</option>
+                  <option value="6.43.11">6.43.11</option>
+                  <option value="6.43.10">6.43.10</option>
+                  <option value="6.43.9">6.43.9</option>
+                  <option value="6.43.8">6.43.8</option>
+                  <option value="6.43.7">6.43.7</option>
+                  <option value="6.43.6">6.43.6</option>
+                  <option value="6.43.5">6.43.5</option>
+                  <option value="6.43.4">6.43.4</option>
+                  <option value="6.43.3">6.43.3</option>
+                  <option value="6.43.2">6.43.2</option>
+                  <option value="6.43.1">6.43.1</option>
+                  <option value="6.43">6.43</option>
+                  <option value="6.42.12">6.42.12</option>
+                  <option value="6.42.11">6.42.11</option>
+                  <option value="6.42.10">6.42.10</option>
+                  <option value="6.42.9">6.42.9</option>
+                  <option value="6.42.8">6.42.8</option>
+                  <option value="6.42.7">6.42.7</option>
+                  <option value="6.42.6">6.42.6</option>
+                  <option value="6.42.5">6.42.5</option>
+                  <option value="6.42.4">6.42.4</option>
+                  <option value="6.42.3">6.42.3</option>
+                  <option value="6.42.2">6.42.2</option>
+                  <option value="6.42.1">6.42.1</option>
+                  <option value="6.42">6.42</option>
+                  <option value="6.41.4">6.41.4</option>
+                  <option value="6.41.3">6.41.3</option>
+                  <option value="6.41.2">6.41.2</option>
+                  <option value="6.41.1">6.41.1</option>
+                  <option value="6.41">6.41</option>
+                  <option value="6.40.9">6.40.9</option>
+                  <option value="6.40.8">6.40.8</option>
+                  <option value="6.40.7">6.40.7</option>
+                  <option value="6.40.6">6.40.6</option>
+                  <option value="6.40.5">6.40.5</option>
+                  <option value="6.40.4">6.40.4</option>
+                  <option value="6.40.3">6.40.3</option>
+                  <option value="6.40.2">6.40.2</option>
+                  <option value="6.40.1">6.40.1</option>
+                  <option value="6.40">6.40</option>
+                </optgroup>
+              </select>
+            </div>
+            <!-- Custom version input for any version not in dropdown -->
+            <div class="relative flex-1">
+              <input type="text" id="versionCustomInput" placeholder="Or type any version (e.g. 7.16.2)" 
+                     class="w-full px-5 py-3.5 glass-input text-white placeholder-gray-400 text-base font-medium focus:ring-2 focus:ring-cyan-400/60 transition-all">
+              <p class="text-xs text-gray-400 mt-1.5 ml-1">Custom version overrides dropdown</p>
+            </div>
+          </div>
+          <p id="versionHint" class="text-xs text-amber-300 mt-1 ml-1 hidden">✏️ Using custom version from input field</p>
+          <p id="versionStatus" class="text-xs text-gray-400 mt-1 ml-1"></p>
+        </div>
+
+        <!-- Architecture Selector -->
+        <div>
+          <label class="block text-sm font-semibold text-cyan-100 mb-2 ml-1 tracking-wide">Architecture</label>
+          <select id="archSelect" class="w-full px-5 py-3.5 glass-input custom-select appearance-none cursor-pointer text-white font-medium focus:ring-2 focus:ring-cyan-400/60 transition-all">
+            <option value="x86">x86</option>
+            <option value="arm">ARM</option>
+            <option value="arm64">ARM64</option>
+            <option value="mipsbe">MIPSBE</option>
+            <option value="mmips">MMIPS</option>
+            <option value="tile">TILE</option>
+            <option value="ppc">PPC</option>
+            <option value="smips">SMIPS</option>
+          </select>
+        </div>
+
+        <!-- Package Type Selector -->
+        <div>
+          <label class="block text-sm font-semibold text-cyan-100 mb-2 ml-1 tracking-wide">Package Type</label>
+          <select id="packageSelect" class="w-full px-5 py-3.5 glass-input custom-select appearance-none cursor-pointer text-white font-medium focus:ring-2 focus:ring-cyan-400/60 transition-all">
+            <option value="npk">.npk (Main package)</option>
+            <option value="iso">.iso (Installation image)</option>
+            <option value="img.zip">.img.zip (Disk image)</option>
+            <option value="all_packages.zip">.all packages.zip (All packages)</option>
+          </select>
+        </div>
+
+        <!-- Generate Button -->
+        <div class="pt-2">
+          <button id="generateBtn" 
+                  class="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white font-bold text-lg rounded-2xl neon-glow transition-all duration-300 shadow-2xl flex items-center justify-center gap-2 active:scale-[0.98]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            </svg>
+            Generate Download Link
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Container -->
+      <div id="resultContainer" class="mt-8 download-link-container">
+        <div class="text-center text-gray-400 text-sm py-3 transition-opacity" id="placeholderText">
+          Select a version and click Generate
+        </div>
+      </div>
+
+      <!-- Version Info Footer -->
+      <div class="mt-6 pt-4 border-t border-white/10">
+        <div class="text-xs text-gray-500 text-center">
+          <p>Files sourced from <a href="https://mikrotik.com/download" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:text-cyan-300 underline">MikroTik Official Download Server</a></p>
+          <!--<p class="mt-1">Download URL format: download.mikrotik.com/routeros/[version]/[filename]</p>-->
+          <p class="mt-1">Devlopped by Tariqul Hasan</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function() {
+      // DOM Elements
+      const versionDropdown = document.getElementById('versionDropdown');
+      const versionCustomInput = document.getElementById('versionCustomInput');
+      const versionHint = document.getElementById('versionHint');
+      const versionStatus = document.getElementById('versionStatus');
+      const archSelect = document.getElementById('archSelect');
+      const packageSelect = document.getElementById('packageSelect');
+      const generateBtn = document.getElementById('generateBtn');
+      const resultContainer = document.getElementById('resultContainer');
+      const placeholderText = document.getElementById('placeholderText');
+
+      const BASE_DOWNLOAD_URL = 'https://download.mikrotik.com/routeros';
+
+      // Version status detection
+      function getVersionStatus(version) {
+        const major = parseInt(version.split('.')[0]);
+        const minor = parseInt(version.split('.')[1]) || 0;
+        const patch = parseInt(version.split('.')[2]) || 0;
+        
+        if (major >= 7) {
+          if (version.includes('23') && minor >= 23) return { status: 'Testing', class: 'badge-testing' };
+          if (minor >= 22) return { status: 'Stable', class: 'badge-stable' };
+          if (minor >= 21) return { status: 'LTS', class: 'badge-lts' };
+          return { status: 'Stable', class: 'badge-stable' };
+        } else if (major === 6) {
+          if (minor >= 49) return { status: 'LTS (EOL)', class: 'badge-eol' };
+          return { status: 'EOL', class: 'badge-eol' };
+        }
+        return { status: 'EOL', class: 'badge-eol' };
+      }
+
+      // Get active version
+      function getActiveVersion() {
+        const customVal = versionCustomInput.value.trim();
+        if (customVal !== '') {
+          return customVal;
+        }
+        return versionDropdown.value;
+      }
+
+      // Update version hint and status
+      function updateVersionUI() {
+        if (versionCustomInput.value.trim() !== '') {
+          versionHint.classList.remove('hidden');
+          if (versionDropdown.value !== '') {
+            versionDropdown.value = '';
+          }
+          const version = versionCustomInput.value.trim();
+          if (isValidVersionFormat(version)) {
+            const status = getVersionStatus(version);
+            versionStatus.innerHTML = `<span class="version-badge ${status.class}">${status.status}</span>`;
+          } else {
+            versionStatus.innerHTML = '';
+          }
+        } else {
+          versionHint.classList.add('hidden');
+          const version = versionDropdown.value;
+          if (version) {
+            const status = getVersionStatus(version);
+            versionStatus.innerHTML = `<span class="version-badge ${status.class}">${status.status}</span>`;
+          } else {
+            versionStatus.innerHTML = '';
+          }
+        }
+      }
+
+      // Event listeners
+      versionCustomInput.addEventListener('input', function() {
+        updateVersionUI();
+        if (this.value.trim() !== '' && versionDropdown.value !== '') {
+          versionDropdown.value = '';
+        }
+      });
+
+      versionDropdown.addEventListener('change', function() {
+        if (this.value !== '') {
+          versionCustomInput.value = '';
+        }
+        updateVersionUI();
+      });
+
+      // Construct download URL
+      function constructDownloadUrl(version, arch, packageType) {
+        const cleanVersion = version.trim();
+        if (!cleanVersion) return null;
+
+        const archMap = {
+          'x86': 'x86', 'arm': 'arm', 'arm64': 'arm64',
+          'mipsbe': 'mipsbe', 'mmips': 'mmips', 'tile': 'tile',
+          'ppc': 'ppc', 'smips': 'smips'
+        };
+        const archKey = archMap[arch] || arch.toLowerCase();
+        let fileName = '';
+
+        switch (packageType) {
+          case 'npk': fileName = `routeros-${archKey}-${cleanVersion}.npk`; break;
+          case 'iso': fileName = `routeros-${cleanVersion}-${archKey}.iso`; break;
+          case 'img.zip': fileName = `routeros-${cleanVersion}-${archKey}.img.zip`; break;
+          case 'all_packages.zip': fileName = `all_packages-${archKey}-${cleanVersion}.zip`; break;
+          default: return null;
+        }
+        return `${BASE_DOWNLOAD_URL}/${cleanVersion}/${fileName}`;
+      }
+
+      function isValidVersionFormat(version) {
+        const trimmed = version.trim();
+        return /^\d+(\.\d+)*$/.test(trimmed);
+      }
+
+      function renderDownloadLink(downloadUrl, version, arch, packageType) {
+        resultContainer.innerHTML = '';
+        resultContainer.classList.add('fade-in');
+        if (placeholderText) placeholderText.style.display = 'none';
+
+        const status = getVersionStatus(version);
+        const wrapper = document.createElement('div');
+        wrapper.className = 'bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/15 shadow-inner';
+        const displayUrl = downloadUrl.length > 70 ? downloadUrl.substring(0, 67) + '...' : downloadUrl;
+
+        wrapper.innerHTML = `
+          <div class="flex flex-col space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 text-cyan-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+                <span class="font-semibold text-sm uppercase tracking-wider">Download Link</span>
+              </div>
+              <span class="version-badge ${status.class} text-xs">${status.status}</span>
+            </div>
+            <div class="bg-black/30 rounded-xl p-3 text-sm font-mono text-gray-200 break-all border border-white/10">
+              ${displayUrl}
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 mt-1">
+              <a href="${downloadUrl}" target="_blank" rel="noopener noreferrer" 
+                 class="flex-1 inline-flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-5 rounded-xl transition-all duration-200 shadow-lg hover:shadow-cyan-500/30 active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Now
+              </a>
+              <button id="copyUrlBtn" data-url="${downloadUrl.replace(/'/g, "&#39;")}" 
+                      class="flex-1 inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/25 text-white font-medium py-3 px-5 rounded-xl transition-all duration-200 backdrop-blur-sm active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Copy Link
+              </button>
+            </div>
+            <p class="text-xs text-gray-400 text-center mt-1">
+              Version ${version} • ${arch.toUpperCase()} • ${packageType.replace('_', ' ')}
+            </p>
+            <p class="text-xs text-yellow-400/70 text-center">
+              ⚠️ Some older/discontinued versions may not be available on the server
+            </p>
+          </div>
+        `;
+        resultContainer.appendChild(wrapper);
+
+        const copyBtn = document.getElementById('copyUrlBtn');
+        if (copyBtn) {
+          copyBtn.addEventListener('click', function(e) {
+            const urlToCopy = this.getAttribute('data-url');
+            if (!urlToCopy) return;
+            navigator.clipboard.writeText(urlToCopy).then(() => {
+              const originalHTML = this.innerHTML;
+              this.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Copied!
+              `;
+              this.classList.add('bg-green-600/40', 'border-green-400');
+              setTimeout(() => {
+                this.innerHTML = originalHTML;
+                this.classList.remove('bg-green-600/40', 'border-green-400');
+              }, 2000);
+            }).catch(() => {
+              alert('Failed to copy. Please manually copy the link.');
+            });
+          });
+        }
+      }
+
+      function showError(message) {
+        resultContainer.innerHTML = `
+          <div class="bg-red-900/30 border border-red-400/40 rounded-2xl p-4 text-center text-red-200 backdrop-blur-sm fade-in">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto mb-2 text-red-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="font-medium">${message}</p>
+          </div>
+        `;
+        if (placeholderText) placeholderText.style.display = 'none';
+      }
+
+      function handleGenerate() {
+        const version = getActiveVersion();
+        const arch = archSelect.value;
+        const packageType = packageSelect.value;
+
+        if (!version) {
+          showError('Please select a version from dropdown or enter a custom version.');
+          return;
+        }
+        if (!isValidVersionFormat(version)) {
+          showError('Invalid version format. Use numbers and dots (e.g., 7.16.2 or 6.49.17).');
+          return;
+        }
+
+        const downloadUrl = constructDownloadUrl(version, arch, packageType);
+        if (!downloadUrl) {
+          showError('Could not construct URL. Check your inputs.');
+          return;
+        }
+
+        renderDownloadLink(downloadUrl, version, arch, packageType);
+      }
+
+      generateBtn.addEventListener('click', handleGenerate);
+
+      versionCustomInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleGenerate();
+        }
+      });
+
+      // Initialize with latest stable version
+      window.addEventListener('DOMContentLoaded', function() {
+        versionDropdown.value = '7.22.3';
+        versionCustomInput.value = '';
+        updateVersionUI();
+        
+        const defaultVersion = getActiveVersion();
+        if (defaultVersion && isValidVersionFormat(defaultVersion)) {
+          const defaultArch = archSelect.value;
+          const defaultPackage = packageSelect.value;
+          const defaultUrl = constructDownloadUrl(defaultVersion, defaultArch, defaultPackage);
+          if (defaultUrl) {
+            renderDownloadLink(defaultUrl, defaultVersion, defaultArch, defaultPackage);
+          }
+        }
+      });
+
+      resultContainer.addEventListener('animationend', function(e) {
+        if (e.target === resultContainer && e.animationName === 'fadeSlide') {
+          resultContainer.classList.remove('fade-in');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
